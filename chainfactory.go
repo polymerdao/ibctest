@@ -91,6 +91,33 @@ func (e BuiltinChainFactoryEntry) GetChain(log *zap.Logger, testName string) (ib
 		chainConfig.Images[0].Version = versionSplit[1]
 		chainConfig.Images[1].Version = versionSplit[0]
 		return penumbra.NewPenumbraChain(testName, chainConfig, e.NumValidators, e.NumFullNodes), nil
+	case "polkadot"
+		parachains := []polkadot.ParachainConfig{}
+		for i := 1; i < len(e.Config.Images); i++ {
+			repository := e.Config.Images[i].Repository
+			var chain, bin string
+			var flags, relayChainFlags []string
+			if strings.Contains(repository, "composable") {
+				bin = "composable"
+				chain = "dali-dev"
+				flags = []string{}
+				relayChainFlags = []string{"--execution=wasm"}
+			} else if strings.Contains(repository, "basilisk") {
+				bin = "basilisk"
+				chain = "local"
+				flags = []string{}
+				relayChainFlags = []string{"--execution=wasm"}
+			}
+			parachains = append(parachains, polkadot.ParachainConfig{
+				Bin:             bin,
+				ChainID:         chain,
+				Image:           e.Config.Images[i],
+				NumNodes:        e.NumFullNodes,
+				Flags:           flags,
+				RelayChainFlags: relayChainFlags,
+			})
+		}
+		return polkadot.NewPolkadotChain(testName, e.Config, e.NumValidators, parachains), nil
 	default:
 		return nil, fmt.Errorf("unexpected error, unknown chain type: %s for chain: %s", chainConfig.Type, e.Name)
 	}
@@ -105,6 +132,7 @@ var builtinChainConfigs = map[string]ibc.ChainConfig{
 	"agoric":   cosmos.NewCosmosHeighlinerChainConfig("agoric", "agd", "agoric", "urun", "0.01urun", 1.3, "672h", true),
 	"icad":     cosmos.NewCosmosHeighlinerChainConfig("icad", "icad", "cosmos", "photon", "0.00photon", 1.2, "504h", false),
 	"penumbra": penumbra.NewPenumbraChainConfig(),
+	"polkadot": polkadot.NewPolkadotChainConfig(),
 }
 
 // NewBuiltinChainFactory returns a BuiltinChainFactory that returns chains defined by entries.
