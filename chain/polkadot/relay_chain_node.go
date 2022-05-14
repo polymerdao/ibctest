@@ -178,6 +178,11 @@ func (p *RelayChainNode) GenerateChainSpecRaw(ctx context.Context) error {
 	return os.WriteFile(p.RawChainSpecFilePath(), []byte(stdout), 0644)
 }
 
+func (p *RelayChainNode) Cleanup(ctx context.Context) error {
+	cmd := []string{"find", fmt.Sprintf("%s/.", p.NodeHome()), "-name", ".", "-o", "-prune", "-exec", "rm", "-rf", "--", "{}", "+"}
+	return dockerutil.HandleNodeJobError(p.NodeJob(ctx, cmd))
+}
+
 func (p *RelayChainNode) CreateNodeContainer() error {
 	nodeKey, err := p.NodeKey.Raw()
 	if err != nil {

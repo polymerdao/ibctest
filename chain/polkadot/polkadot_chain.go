@@ -484,3 +484,28 @@ func (c *PolkadotChain) GetPacketAcknowledgment(ctx context.Context, portID, cha
 func (c *PolkadotChain) GetPacketSequence(ctx context.Context, txHash string) (uint64, error) {
 	return 0, errors.New("not implemented yet")
 }
+
+func (c *PolkadotChain) Cleanup(ctx context.Context) error {
+	var eg errgroup.Group
+	for _, p := range c.RelayChainNodes {
+		p := p
+		eg.Go(func() error {
+			if err := p.StopContainer(); err != nil {
+				return err
+			}
+			return p.Cleanup(ctx)
+		})
+	}
+	for _, n := range c.ParachainNodes {
+		for _, p := range n {
+			p := p
+			eg.Go(func() error {
+				if err := p.StopContainer(); err != nil {
+					return err
+				}
+				return p.Cleanup(ctx)
+			})
+		}
+	}
+	return eg.Wait()
+}

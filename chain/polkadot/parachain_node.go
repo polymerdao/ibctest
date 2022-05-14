@@ -97,6 +97,11 @@ type GetParachainIDResponse struct {
 	ParachainID int `json:"para_id"`
 }
 
+func (pn *ParachainNode) Cleanup(ctx context.Context) error {
+	cmd := []string{"find", fmt.Sprintf("%s/.", pn.NodeHome()), "-name", ".", "-o", "-prune", "-exec", "rm", "-rf", "--", "{}", "+"}
+	return dockerutil.HandleNodeJobError(pn.NodeJob(ctx, cmd))
+}
+
 func (pn *ParachainNode) ParachainID(ctx context.Context) (int, error) {
 	cmd := []string{
 		pn.Bin,
