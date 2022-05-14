@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"math/rand"
 	"os"
 	"path/filepath"
 	"testing"
@@ -28,7 +27,6 @@ var testMatrix struct {
 }
 
 func TestMain(m *testing.M) {
-	rand.Seed(time.Now().UnixNano())
 	addFlags()
 	flag.Parse()
 
