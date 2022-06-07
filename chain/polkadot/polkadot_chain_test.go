@@ -1,24 +1,33 @@
 package polkadot_test
 
 import (
+	"context"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap"
 
-	"github.com/strangelove-ventures/ibc-test-framework/ibctest"
+	"github.com/strangelove-ventures/ibctest"
 )
 
 func TestPolkadotComposableChainStart(t *testing.T) {
 	t.Parallel()
 
-	ctx, home, pool, network, err := ibctest.SetupTestRun(t)
-	require.NoErrorf(t, err, "failed to set up test run")
+	pool, network := ibctest.DockerSetup(t)
+	home := t.TempDir() // Must be before chain cleanup to avoid test error during cleanup.
 
 	log := zap.NewNop()
-	chain, err := ibctest.GetChain(t.Name(), "polkadot", "polkadot:v0.9.19,composable:v2.1.9", "rococo-local", 5, 3, log)
+	chain, err := ibctest.BuiltinChainFactoryEntry{
+		Name:          "polkadot",
+		Version:       "polkadot:v0.9.19,composable:v2.1.9",
+		ChainID:       "rococo-local",
+		NumValidators: 5,
+		NumFullNodes:  3,
+	}.GetChain(log, t.Name())
 	require.NoError(t, err, "failed to get polkadot chain")
+
+	ctx := context.Background()
 
 	t.Cleanup(func() {
 		if err := chain.Cleanup(ctx); err != nil {
@@ -41,12 +50,20 @@ func TestPolkadotComposableChainStart(t *testing.T) {
 func TestPolkadotComposableBasiliskChainStart(t *testing.T) {
 	t.Parallel()
 
-	ctx, home, pool, network, err := ibctest.SetupTestRun(t)
-	require.NoErrorf(t, err, "failed to set up test run")
+	pool, network := ibctest.DockerSetup(t)
+	home := t.TempDir() // Must be before chain cleanup to avoid test error during cleanup.
 
 	log := zap.NewNop()
-	chain, err := ibctest.GetChain(t.Name(), "polkadot", "polkadot:v0.9.19,composable:v2.1.9,basilisk:v7.0.1", "rococo-local", 5, 2, log)
+	chain, err := ibctest.BuiltinChainFactoryEntry{
+		Name:          "polkadot",
+		Version:       "polkadot:v0.9.19,composable:v2.1.9,basilisk:v7.0.1",
+		ChainID:       "rococo-local",
+		NumValidators: 5,
+		NumFullNodes:  2,
+	}.GetChain(log, t.Name())
 	require.NoError(t, err, "failed to get polkadot chain")
+
+	ctx := context.Background()
 
 	t.Cleanup(func() {
 		if err := chain.Cleanup(ctx); err != nil {

@@ -9,15 +9,14 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
-	"time"
 
 	schnorrkel "github.com/ChainSafe/go-schnorrkel/1"
 	p2pCrypto "github.com/libp2p/go-libp2p-core/crypto"
 	"github.com/libp2p/go-libp2p-core/peer"
 
 	"github.com/decred/dcrd/dcrec/secp256k1/v2"
-	"github.com/strangelove-ventures/ibc-test-framework/dockerutil"
-	"github.com/strangelove-ventures/ibc-test-framework/ibc"
+	"github.com/strangelove-ventures/ibctest/ibc"
+	"github.com/strangelove-ventures/ibctest/internal/dockerutil"
 
 	"github.com/ory/dockertest/v3"
 	"github.com/ory/dockertest/v3/docker"
@@ -31,7 +30,7 @@ type RelayChainNode struct {
 	Pool              *dockertest.Pool
 	Container         *docker.Container
 	TestName          string
-	Image             ibc.ChainDockerImage
+	Image             ibc.DockerImage
 	NodeKey           p2pCrypto.PrivKey
 	AccountKey        *schnorrkel.MiniSecretKey
 	StashKey          *schnorrkel.MiniSecretKey
@@ -243,7 +242,8 @@ func (p *RelayChainNode) CreateNodeContainer() error {
 }
 
 func (p *RelayChainNode) StopContainer() error {
-	return p.Pool.Client.StopContainer(p.Container.ID, uint(time.Second*30))
+	// timeout is unit of seconds
+	return p.Pool.Client.StopContainer(p.Container.ID, 30)
 }
 
 func (p *RelayChainNode) StartContainer(ctx context.Context) error {
@@ -266,7 +266,7 @@ func (p *RelayChainNode) NodeJob(ctx context.Context, cmd []string) (int, string
 	caller := runtime.FuncForPC(counter).Name()
 	funcName := strings.Split(caller, ".")
 	container := fmt.Sprintf("%s-%s-%s", p.Name(), funcName[len(funcName)-1], dockerutil.RandLowerCaseLetterString(3))
-	fmt.Printf("{%s} -> '%s'\n", container, strings.Join(cmd, " "))
+	fmt.Printf("{%s} - [%s:%s] -> '%s'\n", container, p.Image.Repository, p.Image.Version, strings.Join(cmd, " "))
 	cont, err := p.Pool.Client.CreateContainer(docker.CreateContainerOptions{
 		Name: container,
 		Config: &docker.Config{

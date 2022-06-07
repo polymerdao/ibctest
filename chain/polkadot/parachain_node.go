@@ -16,8 +16,8 @@ import (
 	"github.com/libp2p/go-libp2p-core/peer"
 	"github.com/ory/dockertest/v3"
 	"github.com/ory/dockertest/v3/docker"
-	"github.com/strangelove-ventures/ibc-test-framework/dockerutil"
-	"github.com/strangelove-ventures/ibc-test-framework/ibc"
+	"github.com/strangelove-ventures/ibctest/ibc"
+	"github.com/strangelove-ventures/ibctest/internal/dockerutil"
 )
 
 type ParachainNode struct {
@@ -28,7 +28,7 @@ type ParachainNode struct {
 	Pool            *dockertest.Pool
 	Container       *docker.Container
 	TestName        string
-	Image           ibc.ChainDockerImage
+	Image           ibc.DockerImage
 	Bin             string
 	NodeKey         p2pCrypto.PrivKey
 	ChainID         string

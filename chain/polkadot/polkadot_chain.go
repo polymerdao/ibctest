@@ -16,8 +16,8 @@ import (
 	p2pCrypto "github.com/libp2p/go-libp2p-core/crypto"
 	"github.com/ory/dockertest/v3"
 	"github.com/ory/dockertest/v3/docker"
-	"github.com/strangelove-ventures/ibc-test-framework/dockerutil"
-	"github.com/strangelove-ventures/ibc-test-framework/ibc"
+	"github.com/strangelove-ventures/ibctest/ibc"
+	"github.com/strangelove-ventures/ibctest/internal/dockerutil"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -50,7 +50,7 @@ type PolkadotParachainSpec struct {
 type ParachainConfig struct {
 	ChainID         string
 	Bin             string
-	Image           ibc.ChainDockerImage
+	Image           ibc.DockerImage
 	NumNodes        int
 	Flags           []string
 	RelayChainFlags []string
@@ -68,7 +68,7 @@ func NewPolkadotChainConfig() ibc.ChainConfig {
 		GasPrices:      "",
 		GasAdjustment:  0,
 		TrustingPeriod: "",
-		Images: []ibc.ChainDockerImage{
+		Images: []ibc.DockerImage{
 			{
 				Repository: "ghcr.io/strangelove-ventures/heighliner/polkadot",
 			},
@@ -95,7 +95,7 @@ func (c *PolkadotChain) Config() ibc.ChainConfig {
 func (c *PolkadotChain) Initialize(testName string, home string, pool *dockertest.Pool, networkID string) error {
 	relayChainNodes := []*RelayChainNode{}
 	chainCfg := c.Config()
-	images := []ibc.ChainDockerImage{}
+	images := []ibc.DockerImage{}
 	images = append(images, chainCfg.Images...)
 	for _, parachain := range c.parachainConfig {
 		images = append(images, parachain.Image)
@@ -411,8 +411,8 @@ func (c *PolkadotChain) GetHostGRPCAddress() string {
 }
 
 // get current height
-func (c *PolkadotChain) Height() (int64, error) {
-	return -1, errors.New("not implemented yet")
+func (c *PolkadotChain) Height(ctx context.Context) (uint64, error) {
+	return 0, errors.New("not implemented yet")
 }
 
 // creates a test key in the "user" node, (either the first fullnode or the first validator if no fullnodes)
@@ -432,8 +432,8 @@ func (c *PolkadotChain) SendFunds(ctx context.Context, keyName string, amount ib
 
 // sends an IBC transfer from a test key on the "user" node (either the first fullnode or the first validator if no fullnodes)
 // returns tx hash
-func (c *PolkadotChain) SendIBCTransfer(ctx context.Context, channelID, keyName string, amount ibc.WalletAmount, timeout *ibc.IBCTimeout) (string, error) {
-	return "", errors.New("not implemented yet")
+func (c *PolkadotChain) SendIBCTransfer(ctx context.Context, channelID, keyName string, amount ibc.WalletAmount, timeout *ibc.IBCTimeout) (ibc.Tx, error) {
+	return ibc.Tx{}, errors.New("not implemented yet")
 }
 
 // takes file path to smart contract and initialization message. returns contract address
@@ -477,8 +477,27 @@ func (c *PolkadotChain) GetTransaction(ctx context.Context, txHash string) (*typ
 	return nil, errors.New("not implemented yet")
 }
 
-func (c *PolkadotChain) GetPacketAcknowledgment(ctx context.Context, portID, channelID string, seq uint64) (ibc.PacketAcknowledgment, error) {
-	return ibc.PacketAcknowledgment{}, errors.New("not implemented yet")
+func (c *PolkadotChain) Acknowledgements(ctx context.Context, height uint64) ([]ibc.PacketAcknowledgement, error) {
+	panic("implement me")
+}
+
+func (c *PolkadotChain) Timeouts(ctx context.Context, height uint64) ([]ibc.PacketTimeout, error) {
+	panic("implement me")
+}
+
+func (c *PolkadotChain) RegisterInterchainAccount(ctx context.Context, keyName, connectionID string) (string, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (c *PolkadotChain) SendICABankTransfer(ctx context.Context, connectionID, fromAddr string, amount ibc.WalletAmount) error {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (c *PolkadotChain) QueryInterchainAccount(ctx context.Context, connectionID, address string) (string, error) {
+	//TODO implement me
+	panic("implement me")
 }
 
 func (c *PolkadotChain) GetPacketSequence(ctx context.Context, txHash string) (uint64, error) {

@@ -8,6 +8,7 @@ import (
 
 	"github.com/strangelove-ventures/ibctest/chain/cosmos"
 	"github.com/strangelove-ventures/ibctest/chain/penumbra"
+	"github.com/strangelove-ventures/ibctest/chain/polkadot"
 	"github.com/strangelove-ventures/ibctest/ibc"
 	"github.com/strangelove-ventures/ibctest/label"
 	"go.uber.org/zap"
@@ -91,33 +92,56 @@ func (e BuiltinChainFactoryEntry) GetChain(log *zap.Logger, testName string) (ib
 		chainConfig.Images[0].Version = versionSplit[1]
 		chainConfig.Images[1].Version = versionSplit[0]
 		return penumbra.NewPenumbraChain(testName, chainConfig, e.NumValidators, e.NumFullNodes), nil
-	case "polkadot"
-		parachains := []polkadot.ParachainConfig{}
-		for i := 1; i < len(e.Config.Images); i++ {
-			repository := e.Config.Images[i].Repository
-			var chain, bin string
-			var flags, relayChainFlags []string
-			if strings.Contains(repository, "composable") {
-				bin = "composable"
-				chain = "dali-dev"
-				flags = []string{}
-				relayChainFlags = []string{"--execution=wasm"}
-			} else if strings.Contains(repository, "basilisk") {
-				bin = "basilisk"
-				chain = "local"
-				flags = []string{}
-				relayChainFlags = []string{"--execution=wasm"}
+	case "polkadot":
+		versionSplit := strings.Split(e.Version, ",")
+		relayChainImageSplit := strings.Split(versionSplit[0], ":")
+		var relayChainVersion string
+		if len(relayChainImageSplit) > 1 {
+			if relayChainImageSplit[0] != "polkadot" {
+				return nil, fmt.Errorf("only polkadot is supported as the relay chain node. got: %s", relayChainImageSplit[0])
 			}
-			parachains = append(parachains, polkadot.ParachainConfig{
-				Bin:             bin,
-				ChainID:         chain,
-				Image:           e.Config.Images[i],
-				NumNodes:        e.NumFullNodes,
-				Flags:           flags,
-				RelayChainFlags: relayChainFlags,
-			})
+			relayChainVersion = relayChainImageSplit[1]
+		} else {
+			relayChainVersion = relayChainImageSplit[0]
 		}
-		return polkadot.NewPolkadotChain(testName, e.Config, e.NumValidators, parachains), nil
+		chainConfig.Images[0].Version = relayChainVersion
+		parachains := []polkadot.ParachainConfig{}
+		for i := 1; i < len(versionSplit); i++ {
+			imageSplit := strings.Split(versionSplit[i], ":")
+			if len(imageSplit) != 2 {
+				return nil, fmt.Errorf("parachain versions should be in the format parachain_name:parachain_version, got: %s", versionSplit[i])
+			}
+			switch imageSplit[0] {
+			// composable
+			case "composable":
+				parachains = append(parachains, polkadot.ParachainConfig{
+					Bin:     "composable",
+					ChainID: "dali-dev",
+					Image: ibc.DockerImage{
+						Repository: "ghcr.io/strangelove-ventures/heighliner/composable",
+						Version:    imageSplit[1],
+					},
+					NumNodes:        e.NumFullNodes,
+					Flags:           []string{},
+					RelayChainFlags: []string{"--execution=wasm"},
+				})
+			case "basilisk":
+				parachains = append(parachains, polkadot.ParachainConfig{
+					Bin:     "basilisk",
+					ChainID: "local",
+					Image: ibc.DockerImage{
+						Repository: "ghcr.io/strangelove-ventures/heighliner/basilisk",
+						Version:    imageSplit[1],
+					},
+					NumNodes:        e.NumFullNodes,
+					Flags:           []string{},
+					RelayChainFlags: []string{"--execution=wasm"},
+				})
+			default:
+				return nil, fmt.Errorf("unsupported parachain: %s", imageSplit[0])
+			}
+		}
+		return polkadot.NewPolkadotChain(testName, chainConfig, e.NumValidators, parachains), nil
 	default:
 		return nil, fmt.Errorf("unexpected error, unknown chain type: %s for chain: %s", chainConfig.Type, e.Name)
 	}
@@ -202,8 +226,35 @@ func (e CustomChainFactoryEntry) GetChain(testName string, log *zap.Logger) (ibc
 		return cosmos.NewCosmosChain(testName, e.Config, e.NumValidators, e.NumFullNodes, log), nil
 	case "penumbra":
 		return penumbra.NewPenumbraChain(testName, e.Config, e.NumValidators, e.NumFullNodes), nil
+	case "polkadot":
+		parachains := []polkadot.ParachainConfig{}
+		for i := 1; i < len(e.Config.Images); i++ {
+			repository := e.Config.Images[i].Repository
+			var chain, bin string
+			var flags, relayChainFlags []string
+			if strings.Contains(repository, "composable") {
+				bin = "composable"
+				chain = "dali-dev"
+				flags = []string{}
+				relayChainFlags = []string{"--execution=wasm"}
+			} else if strings.Contains(repository, "basilisk") {
+				bin = "basilisk"
+				chain = "local"
+				flags = []string{}
+				relayChainFlags = []string{"--execution=wasm"}
+			}
+			parachains = append(parachains, polkadot.ParachainConfig{
+				Bin:             bin,
+				ChainID:         chain,
+				Image:           e.Config.Images[i],
+				NumNodes:        e.NumFullNodes,
+				Flags:           flags,
+				RelayChainFlags: relayChainFlags,
+			})
+		}
+		return polkadot.NewPolkadotChain(testName, e.Config, e.NumValidators, parachains), nil
 	default:
-		return nil, fmt.Errorf("only (cosmos, penumbra) type chains are currently supported (got %q)", e.Config.Type)
+		return nil, fmt.Errorf("only (cosmos, penumbra, polkadot) type chains are currently supported (got %q)", e.Config.Type)
 	}
 }
 
