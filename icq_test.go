@@ -21,10 +21,37 @@ func TestInterchainQueries(t *testing.T) {
 
 	ctx := context.Background()
 
-	// TODO still need to get a docker image pulled into heighliner for simd
+	// TODO still need to get a docker image pulled into heighliner for simd to avoid this manual configuration
+	dockerImage := ibc.DockerImage{
+		Repository: "icq/simd",
+		Version:    "bc05d11",
+	}
+
 	cf := NewBuiltinChainFactory(zaptest.NewLogger(t), []*ChainSpec{
-		{Name: "simd", ChainName: "test-1", Version: ""},
-		{Name: "simd", ChainName: "test-2", Version: ""},
+		{ChainName: "test-1", ChainConfig: ibc.ChainConfig{
+			Type:           "cosmos",
+			Name:           "simd",
+			ChainID:        "test-1",
+			Images:         []ibc.DockerImage{dockerImage},
+			Bin:            "simd",
+			Bech32Prefix:   "cosmos",
+			Denom:          "photon",
+			GasPrices:      "0.01stake",
+			TrustingPeriod: "300h",
+			GasAdjustment:  1.1,
+		}},
+		{ChainName: "test-2", ChainConfig: ibc.ChainConfig{
+			Type:           "cosmos",
+			Name:           "simd",
+			ChainID:        "test-2",
+			Images:         []ibc.DockerImage{dockerImage},
+			Bin:            "simd",
+			Bech32Prefix:   "cosmos",
+			Denom:          "photon",
+			GasPrices:      "0.01stake",
+			TrustingPeriod: "300h",
+			GasAdjustment:  1.1,
+		}},
 	})
 
 	chains, err := cf.Chains(t.Name())
