@@ -74,15 +74,17 @@ const (
 	Juno    Chain = "juno"
 	Agoric  Chain = "agoric"
 
-	Penumbra Chain = "penumbra"
+	Penumbra   Chain = "penumbra"
+	Polymerase Chain = "polymerase"
 )
 
 var knownChainLabels = map[Chain]struct{}{
-	Gaia:     {},
-	Osmosis:  {},
-	Juno:     {},
-	Agoric:   {},
-	Penumbra: {},
+	Gaia:       {},
+	Osmosis:    {},
+	Juno:       {},
+	Agoric:     {},
+	Penumbra:   {},
+	Polymerase: {},
 }
 
 // RegisterChainLabel is available for external packages that may import ibctest,
