@@ -94,20 +94,13 @@ func TestInterchainQueries(t *testing.T) {
 			Path:    pathName,
 		})
 
+	// Build the network by initializing and starting the chains and creating an IBC path between them.
 	require.NoError(t, ic.Build(ctx, eRep, ibctest.InterchainBuildOptions{
 		TestName:  t.Name(),
-<<<<<<< HEAD
 		Client:    client,
 		NetworkID: network,
 
 		SkipPathCreation: false,
-=======
-		HomeDir:   home,
-		Client:    client,
-		NetworkID: network,
-
-		SkipPathCreation: false, // skip automatic path creation because it defaults to an ics20 channel
->>>>>>> 2d4d28d (WIP: running icq commands to init a query and check results)
 		CreateChannelOpts: ibc.CreateChannelOptions{
 			SourcePortName: "interquery",
 			DestPortName:   "icqhost",
@@ -116,26 +109,11 @@ func TestInterchainQueries(t *testing.T) {
 		},
 	}))
 
-<<<<<<< HEAD
 	// Fund user accounts, so we can query balances and make assertions.
 	const userFunds = int64(10_000_000_000)
 	users := ibctest.GetAndFundTestUsers(t, ctx, t.Name(), userFunds, chain1, chain2)
 	chain1User := users[0]
 	chain2User := users[1]
-=======
-	//cmd := []string{"icq", "q", "interquery", "params", "--node", chain1.GetRPCAddress(), "--home", chain1.HomeDir()}
-	//stdout, stderr, err := chain1.Exec(ctx, cmd, nil)
-	//require.NoError(t, err)
-	//t.Log(stdout)
-	//t.Log()
-	//t.Log(stderr)
-
-	// Fund user accounts, so we can query balances and make assertions.
-	const userFunds = int64(10_000_000_000)
-	users := ibctest.GetAndFundTestUsers(t, ctx, t.Name(), userFunds, chain1, chain2)
-	user1 := users[0]
-	user2 := users[1]
->>>>>>> 2d4d28d (WIP: running icq commands to init a query and check results)
 
 	// Wait a few blocks for user accounts to be created on chain.
 	err = test.WaitForBlocks(ctx, 10, chain1, chain2)
@@ -191,6 +169,8 @@ func TestInterchainQueries(t *testing.T) {
 	// Wait a few blocks for query to be sent to counterparty.
 	err = test.WaitForBlocks(ctx, 10, chain1)
 	require.NoError(t, err)
+
+	t.Log("Finished waiting for blocks after sending IBC query")
 
 	// Check the results from the IBC query above.
 	cmd = []string{"icq", "query", "interquery", "query-state", strconv.Itoa(1),
