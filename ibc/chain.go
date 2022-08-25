@@ -63,7 +63,7 @@ type Chain interface {
 	UpgradeProposal(ctx context.Context, keyName string, prop SoftwareUpgradeProposal) (SoftwareUpgradeTx, error)
 
 	// InstantiateContract takes a file path to smart contract and initialization message and returns the instantiated contract address.
-	InstantiateContract(ctx context.Context, keyName string, amount WalletAmount, fileName, initMessage string, needsNoAdminFlag bool) (string, error)
+	InstantiateContract(ctx context.Context, keyName string, fileName, initMessage string, needsNoAdminFlag bool) (string, error)
 
 	// ExecuteContract executes a contract transaction with a message using it's address.
 	ExecuteContract(ctx context.Context, keyName string, contractAddress string, message string) error

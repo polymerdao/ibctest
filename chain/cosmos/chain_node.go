@@ -532,7 +532,7 @@ type CodeInfosResponse struct {
 	CodeInfos []CodeInfo `json:"code_infos"`
 }
 
-func (tn *ChainNode) InstantiateContract(ctx context.Context, keyName string, amount ibc.WalletAmount, fileName, initMessage string, needsNoAdminFlag bool) (string, error) {
+func (tn *ChainNode) InstantiateContract(ctx context.Context, keyName string, fileName, initMessage string, needsNoAdminFlag bool) (string, error) {
 	content, err := os.ReadFile(fileName)
 	if err != nil {
 		return "", err

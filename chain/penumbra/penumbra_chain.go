@@ -175,7 +175,7 @@ func (c *PenumbraChain) UpgradeProposal(ctx context.Context, keyName string, pro
 }
 
 // Implements Chain interface
-func (c *PenumbraChain) InstantiateContract(ctx context.Context, keyName string, amount ibc.WalletAmount, fileName, initMessage string, needsNoAdminFlag bool) (string, error) {
+func (c *PenumbraChain) InstantiateContract(ctx context.Context, keyName string, fileName, initMessage string, needsNoAdminFlag bool) (string, error) {
 	panic("implement me")
 }
 

@@ -290,7 +290,7 @@ func (c *CosmosChain) UpgradeProposal(ctx context.Context, keyName string, prop 
 }
 
 // Implements Chain interface
-func (c *CosmosChain) InstantiateContract(ctx context.Context, keyName string, amount ibc.WalletAmount, fileName, initMessage string, needsNoAdminFlag bool) (string, error) {
+func (c *CosmosChain) InstantiateContract(ctx context.Context, keyName string, fileName, initMessage string, needsNoAdminFlag bool) (string, error) {
 	return c.getFullNode().InstantiateContract(ctx, keyName, amount, fileName, initMessage, needsNoAdminFlag)
 }
 

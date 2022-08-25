@@ -2,10 +2,8 @@ package ibctest
 
 import (
 	"context"
-	"strconv"
 	"testing"
 
-	"github.com/cosmos/cosmos-sdk/crypto/keyring"
 	"github.com/strangelove-ventures/ibctest"
 	"github.com/strangelove-ventures/ibctest/ibc"
 	"github.com/strangelove-ventures/ibctest/relayer"
@@ -31,8 +29,8 @@ func TestInterchainQueries(t *testing.T) {
 
 	// TODO still need to get a docker image pulled into heighliner for icqd to avoid this manual configuration
 	dockerImage := ibc.DockerImage{
-		Repository: "icq",
-		Version:    "16a398a",
+		Repository: "localhost:5050/wasmd",
+		Version:    "latest",
 	}
 
 	// Get both chains
@@ -44,8 +42,8 @@ func TestInterchainQueries(t *testing.T) {
 				Name:           "icq",
 				ChainID:        "test-1",
 				Images:         []ibc.DockerImage{dockerImage},
-				Bin:            "icq",
-				Bech32Prefix:   "cosmos",
+				Bin:            "wasmd",
+				Bech32Prefix:   "wasm",
 				Denom:          "atom",
 				GasPrices:      "0.00stake",
 				TrustingPeriod: "300h",
@@ -58,8 +56,8 @@ func TestInterchainQueries(t *testing.T) {
 				Name:           "icq",
 				ChainID:        "test-2",
 				Images:         []ibc.DockerImage{dockerImage},
-				Bin:            "icq",
-				Bech32Prefix:   "cosmos",
+				Bin:            "wasmd",
+				Bech32Prefix:   "wasm",
 				Denom:          "atom",
 				GasPrices:      "0.00stake",
 				TrustingPeriod: "300h",
@@ -149,6 +147,12 @@ func TestInterchainQueries(t *testing.T) {
 
 	chain2Addr := chain2User.Bech32Address(chain2.Config().Bech32Prefix)
 	require.NotEqual(t, "", chain2Addr)
+
+	// Deploy ICQ contract
+	initMessage := "{\"default_timeout\": 60}"
+	contractAddr, err := chain1.InstantiateContract(ctx, chain1Addr, "./examples/contracts/icq.wasm", initMessage, true)
+	require.NoError(t, err)
+	t.Logf("icq contract deployed at: %s \n", contractAddr)
 
 	cmd := []string{"icq", "tx", "interquery", "send-query-all-balances", chanID, chain2Addr,
 		"--node", chain1.GetRPCAddress(),
