@@ -571,7 +571,7 @@ func (c *PolkadotChain) UpgradeProposal(ctx context.Context, keyName string, pro
 
 // InstantiateContract takes a file path to smart contract and initialization message and returns the instantiated contract address.
 // Implements Chain interface.
-func (c *PolkadotChain) InstantiateContract(ctx context.Context, keyName string, amount ibc.WalletAmount, fileName, initMessage string, needsNoAdminFlag bool) (string, error) {
+func (c *PolkadotChain) InstantiateContract(ctx context.Context, keyName string, fileName, initMessage string, needsNoAdminFlag bool) (string, error) {
 	panic("not implemented yet")
 }
 
